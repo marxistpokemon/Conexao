@@ -2,4 +2,4 @@ Mobile game by [Enric Llagostera](http://enric.llagostera.com.br) and [Simon Duc
 
 ---
 
-![Rascunho inicial](../2014-02-27_ConectaNumeros_01.png)
+![Rascunho inicial](Capa.png)
