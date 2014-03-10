@@ -33,21 +33,19 @@ public class GameManager : MonoBehaviour {
 	}
 
 	void Update(){
-
 		polCollider.enabled = (pieceSequence.Count > 2);
-
-		if(pieceSequence.Count > 1){
+		if(pieceSequence.Count > 0){
 			connectionLine.enabled = true;
 			UpdateConnectionLine();
-			// follow mouse cursor
-			if(!moveLock){
-				connectionLine.SetPosition(
-					pieceSequence.Count, 
-					Camera.main.ScreenToWorldPoint(Input.mousePosition));
-			}
 		}
 		else {
 			connectionLine.enabled = false;
+		}
+		// follow mouse cursor
+		if(!moveLock){
+			connectionLine.SetPosition(
+				pieceSequence.Count, 
+				Camera.main.ScreenToWorldPoint(Input.mousePosition));
 		}
 	}
 
