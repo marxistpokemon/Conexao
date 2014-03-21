@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using URandom;
 
 public class GameManager : MonoBehaviour {
 
@@ -28,11 +29,14 @@ public class GameManager : MonoBehaviour {
 	private GUIText msgLevel;
 	private GUIText msgPoints;
 
+	private UnityRandom urand;
+
 	void Awake(){
 		g = this;
 	}
 
 	void Start () {
+		urand = new UnityRandom();
 		sequence = new List<Piece>();
 		connectionLine = GetComponent<LineRenderer>();
 		polCollider = GetComponent<PolygonCollider2D>();
@@ -91,7 +95,7 @@ public class GameManager : MonoBehaviour {
 			connectionLine.enabled = false;
 		}
 		// follow mouse cursor
-		if(!moveLock){
+		if(!moveLock && sequence.Count > 0){
 			connectionLine.SetPosition(
 				sequence.Count, 
 				Camera.main.ScreenToWorldPoint(Input.mousePosition));
@@ -107,6 +111,7 @@ public class GameManager : MonoBehaviour {
 		Object[] allGO = GameObject.FindObjectsOfType(typeof(Piece));
 		foreach (var go in allGO) {
 			allPieces.Add(go as Piece);
+			(go as Piece).onCaptureArea = false;
 		}
 	}
 
@@ -143,7 +148,8 @@ public class GameManager : MonoBehaviour {
 	public IEnumerator CompleteSeq(Transform firstPiece){
 		moveLock = true;
 		//Vector3 spawnPos = CreateMesh(polCollider.points);
-		Vector3 spawnPos = sequence[0].transform.position;
+		Slot spawnSlot = sequence[0].slot;
+		Vector3 spawnPos = spawnSlot.position;
 		yield return new WaitForSeconds(completionDelay);
 		// clear area mesh
 		//CreateMesh(new Vector2[3]);
@@ -164,19 +170,20 @@ public class GameManager : MonoBehaviour {
 		points += seqValue;
 		if(capturedValue > 0){
 			Transform combinedPiece = 
-				Instantiate (piecePrefab, spawnPos, Quaternion.identity) 
-					as Transform;
-			combinedPiece.GetComponent<Piece>().value = capturedValue;
+				Instantiate (piecePrefab) as Transform;
+			spawnSlot.piece = combinedPiece.GetComponent<Piece>();
+			spawnSlot.piece.transform.position = spawnSlot.position;
+			spawnSlot.full = true;
+			spawnSlot.piece.slot = spawnSlot;
+			spawnSlot.piece.value = capturedValue;
 		}
 		Debug.Log("Combined: " + capturedValue + " | Points: " + seqValue);
 		sequence.Clear();
 		allPieces = null;
 		yield return new WaitForSeconds(0);
-		UpdateAllPieces();
-		//UpdateConnectionLine();
 		int newWave = Grid.g.FindEmptySlots().Length;
 		for (int i = 0; i < newWave; i++) {
-			Grid.g.SpawnPiece(Random.Range (1, 3));
+			Grid.g.SpawnPiece(Random.Range(1, 5));
 		}
 		UpdateAllPieces();
 		moveLock = false;

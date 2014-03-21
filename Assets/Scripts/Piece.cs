@@ -10,6 +10,7 @@ public class Piece : MonoBehaviour {
 	public bool onCaptureArea = false;
 	public Slot slot = null;
 	private SpriteRenderer spriteRenderer;
+	public GUIText txt;
 
 	void Start(){
 		if(value == 0 ) value = Random.Range(1, 3);
@@ -18,7 +19,9 @@ public class Piece : MonoBehaviour {
 	}
 
 	void Update(){
-		spriteRenderer.sprite = pieceGraphics[value];
+		//spriteRenderer.sprite = pieceGraphics[value];
+		txt.text = value + "";
+		txt.transform.position = Camera.main.WorldToViewportPoint(transform.position);
 		renderer.material.color = (isClicked)? Color.yellow : Color.white;
 		renderer.material.color = (onCaptureArea)? Color.red : renderer.material.color;
 	}

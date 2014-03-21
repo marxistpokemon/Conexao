@@ -6,7 +6,7 @@ public class Grid : MonoBehaviour {
 
 	public static Grid g;
 
-	public int initialQuantity = 0;
+	private int initialQuantity;
 	public int width;
 	public int height;
 	public float pieceWidth;
@@ -24,6 +24,7 @@ public class Grid : MonoBehaviour {
 	void Start () {
 		minX = - (width * pieceWidth) / 2 + pieceWidth/2; 
 		minY = - (height * pieceHeight) /2 + pieceHeight/2;
+		initialQuantity = height*width;
 		for (int i = 0; i < initialQuantity; i++) {
 			Transform newPiece = Instantiate(Resources.Load<Transform>("Piece")) 
 				as Transform;
