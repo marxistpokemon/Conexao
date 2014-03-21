@@ -1,13 +1,14 @@
 ﻿using UnityEngine;
 using System.Collections;
 
+
 public class Piece : MonoBehaviour {
 
 	public int value = 0;
 	public Sprite[] pieceGraphics;
 	public bool isClicked = false;
 	public bool onCaptureArea = false;
-
+	public Slot slot = null;
 	private SpriteRenderer spriteRenderer;
 
 	void Start(){
@@ -26,16 +27,24 @@ public class Piece : MonoBehaviour {
 		Debug.Log("Click : " + gameObject.name);
 		if(!GameManager.g.moveLock){
 			if(!isClicked){
-				GameManager.g.AddPieceToSeq(transform);
-				isClicked = true;
+				// se primeiro da sequencia
+				if(GameManager.g.cursorValue == 0){
+					GameManager.g.cursorValue = value;
+					GameManager.g.AddPieceToSeq(this);
+					isClicked = true;
+				}
+				else if(GameManager.g.cursorValue == value){
+					GameManager.g.AddPieceToSeq(this);
+					isClicked = true;
+				}
 			}
 			else {
-				if(transform == GameManager.g.pieceSequence[0] &&
+				if(this == GameManager.g.sequence[0] &&
 				   GameManager.g.SeqCount() > 2){
 					GameManager.g.StartCoroutine("CompleteSeq", transform);
 				}
 				else {
-					GameManager.g.RemovePieceFromSeq(transform);
+					GameManager.g.RemovePieceFromSeq(this);
 				}
 			}
 		}
@@ -45,5 +54,9 @@ public class Piece : MonoBehaviour {
 		if(info.gameObject.GetComponent<PolygonCollider2D>() != null){
 			onCaptureArea = !isClicked;
 		}
+	}
+
+	void OnDestroy(){
+		Destroy(gameObject);
 	}
 }

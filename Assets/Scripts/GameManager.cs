@@ -10,8 +10,9 @@ public class GameManager : MonoBehaviour {
 	public int points;
 
 	private LineRenderer connectionLine;
-	public List<Transform> pieceSequence;
-	[HideInInspector] public List<Transform> allPieces;
+	public int cursorValue = 0;
+	public List<Piece> sequence;
+	public List<Piece> allPieces;
 
 	public float completionDelay = 1f;
 	[HideInInspector] public bool moveLock;
@@ -32,7 +33,7 @@ public class GameManager : MonoBehaviour {
 	}
 
 	void Start () {
-		pieceSequence = new List<Transform>();
+		sequence = new List<Piece>();
 		connectionLine = GetComponent<LineRenderer>();
 		polCollider = GetComponent<PolygonCollider2D>();
 		UpdateAllPieces();
@@ -62,27 +63,27 @@ public class GameManager : MonoBehaviour {
 		return msh.bounds.center;
 	}
 
-	public bool AddPieceToSeq(Transform piece){
-		int index = pieceSequence.FindIndex(p => p == piece);
+	public bool AddPieceToSeq(Piece piece){
+		int index = sequence.FindIndex(p => p == piece);
 		if (index < 0) {
-			pieceSequence.Add(piece);
+			sequence.Add(piece);
 			UpdateClicked();
 			return true;
 		}
 		return false;
 	}
 
-	public void RemovePieceFromSeq(Transform piece){
+	public void RemovePieceFromSeq(Piece piece){
 		Debug.Log ("remove piece");
-		int indexToRemove = pieceSequence.FindIndex(p => p == piece);
-		pieceSequence.RemoveRange(indexToRemove, SeqCount()-indexToRemove);
+		int indexToRemove = sequence.FindIndex(p => p == piece);
+		sequence.RemoveRange(indexToRemove, SeqCount()-indexToRemove);
 		UpdateClicked();
 	}
 
 	#region Updates and helper functions
 	void Update(){
-		polCollider.enabled = (pieceSequence.Count > 2);
-		if(pieceSequence.Count > 0){
+		polCollider.enabled = (sequence.Count > 2);
+		if(sequence.Count > 0){
 			connectionLine.enabled = true;
 			UpdateConnectionLine();
 		}
@@ -92,65 +93,68 @@ public class GameManager : MonoBehaviour {
 		// follow mouse cursor
 		if(!moveLock){
 			connectionLine.SetPosition(
-				pieceSequence.Count, 
+				sequence.Count, 
 				Camera.main.ScreenToWorldPoint(Input.mousePosition));
 		}
 		// GUI update
 		msgLevel.text = "Level: " + level;
 		msgPoints.text = "Points: " + points;
+		if(sequence.Count == 0) cursorValue = 0;
 	}
 
 	public void UpdateAllPieces(){
-		allPieces = new List<Transform>();
+		allPieces = new List<Piece>();
 		Object[] allGO = GameObject.FindObjectsOfType(typeof(Piece));
 		foreach (var go in allGO) {
-			allPieces.Add((go as Piece).transform);
+			allPieces.Add(go as Piece);
 		}
 	}
 
 	void UpdateClicked ()
 	{
 		allPieces.ForEach(p => {
-			p.GetComponent<Piece>().isClicked = isInSeq(p);
+			p.isClicked = isInSeq(p);
 		});
 	}
 
 	public void UpdateConnectionLine ()
 	{
-		connectionLine.SetVertexCount(pieceSequence.Count+1);
-		Vector2[] points = new Vector2[pieceSequence.Count];
-		for (int i = 0; i < pieceSequence.Count; i++) {
-			connectionLine.SetPosition(i, pieceSequence[i].position);
+		connectionLine.SetVertexCount(sequence.Count+1);
+		Vector2[] points = new Vector2[sequence.Count];
+		for (int i = 0; i < sequence.Count; i++) {
+			connectionLine.SetPosition(i, sequence[i].transform.position);
 			points[i] = new Vector2(
-				pieceSequence[i].position.x,
-				pieceSequence[i].position.y);
+				sequence[i].transform.position.x,
+				sequence[i].transform.position.y);
 		}
 		polCollider.SetPath(0, points);
 	}
 
 	public int SeqCount(){
-		return pieceSequence.Count;
+		return sequence.Count;
 	}
 
-	public bool isInSeq(Transform piece){
-		return (pieceSequence.FindIndex(p => p == piece) >= 0);
+	public bool isInSeq(Piece piece){
+		return (sequence.FindIndex(p => p == piece) >= 0);
 	}
 	#endregion
 
 	public IEnumerator CompleteSeq(Transform firstPiece){
 		moveLock = true;
-		Vector3 spawnPos = CreateMesh(polCollider.points);
+		//Vector3 spawnPos = CreateMesh(polCollider.points);
+		Vector3 spawnPos = sequence[0].transform.position;
 		yield return new WaitForSeconds(completionDelay);
 		// clear area mesh
 		CreateMesh(new Vector2[3]);
 		// handle captured pieces
 		int capturedValue = 0;
-		int seqValue = 0;
+		int seqValue = 1;
 		allPieces.ForEach(p => {
 			Piece piece = p.GetComponent<Piece>();
 			capturedValue += (piece.onCaptureArea)? piece.value : 0;
-			seqValue += (piece.isClicked)? piece.value : 0;
+			seqValue *= (piece.isClicked)? piece.value : 1;
 			if(piece.isClicked || piece.onCaptureArea){
+				p.slot.full = false;
 				DestroyObject(p.gameObject);
 			}
 			piece.isClicked = false;
@@ -163,11 +167,14 @@ public class GameManager : MonoBehaviour {
 			combinedPiece.GetComponent<Piece>().value = capturedValue;
 		}
 		Debug.Log("Combined: " + capturedValue + " | Points: " + seqValue);
-		pieceSequence.Clear();
+		sequence.Clear();
 		allPieces = null;
 		yield return new WaitForSeconds(0);
 		UpdateAllPieces();
 		UpdateConnectionLine();
+		Grid.g.SpawnPiece(Random.Range (1, 3));
+		Grid.g.SpawnPiece(Random.Range (1, 3));
+		Grid.g.SpawnPiece(Random.Range (1, 3));
 		moveLock = false;
 	}
 }
