@@ -101,7 +101,7 @@ public class GameManager : MonoBehaviour {
 				Camera.main.ScreenToWorldPoint(Input.mousePosition));
 		}
 		// GUI update
-		msgLevel.text = "Level: " + level;
+
 		msgPoints.text = "Points: " + points;
 		if(sequence.Count == 0) cursorValue = 0;
 	}
@@ -146,6 +146,8 @@ public class GameManager : MonoBehaviour {
 	#endregion
 
 	public IEnumerator CompleteSeq(Transform firstPiece){
+		int oldPoints = points;
+		int cursor = cursorValue;
 		moveLock = true;
 		//Vector3 spawnPos = CreateMesh(polCollider.points);
 		Slot spawnSlot = sequence[0].slot;
@@ -154,11 +156,11 @@ public class GameManager : MonoBehaviour {
 		// clear area mesh
 		//CreateMesh(new Vector2[3]);
 		// handle captured pieces
-		int capturedValue = 0;
+		int capturedValue = cursorValue;
 		int seqValue = 1;
 		allPieces.ForEach(p => {
 			Piece piece = p.GetComponent<Piece>();
-			capturedValue += (piece.onCaptureArea)? piece.value : 0;
+			capturedValue += (piece.onCaptureArea)? 1 : 0;
 			seqValue *= (piece.isClicked)? piece.value : 1;
 			if(piece.isClicked || piece.onCaptureArea){
 				p.slot.full = false;
@@ -177,15 +179,31 @@ public class GameManager : MonoBehaviour {
 			spawnSlot.piece.slot = spawnSlot;
 			spawnSlot.piece.value = capturedValue;
 		}
-		Debug.Log("Combined: " + capturedValue + " | Points: " + seqValue);
+		Debug.Log("Combined: " + cursorValue + " | Points: " + seqValue);
 		sequence.Clear();
 		allPieces = null;
 		yield return new WaitForSeconds(0);
 		int newWave = Grid.g.FindEmptySlots().Length;
 		for (int i = 0; i < newWave; i++) {
-			Grid.g.SpawnPiece(Random.Range(1, 5));
+			Grid.g.SpawnPiece(Random.Range(cursor, cursor*2));
 		}
 		UpdateAllPieces();
+		msgLevel.text = "Lose: " + LosingConditions();
 		moveLock = false;
+	}
+
+	public bool LosingConditions(){
+		bool lose = true;
+		List<int> pieceValues = new List<int>();
+		foreach (var item in allPieces) {
+			pieceValues.Add(item.value);
+		}
+		foreach (var number in pieceValues) {
+			if(pieceValues.FindAll(v => v == number).Count >= number && number > 2){
+				lose = false;
+				Debug.Log("V: " + number + " Count: " + pieceValues.FindAll(v => v == number).Count);
+			}
+		}
+		return lose;
 	}
 }

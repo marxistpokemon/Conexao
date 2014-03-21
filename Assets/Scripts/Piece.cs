@@ -45,6 +45,7 @@ public class Piece : MonoBehaviour {
 				}
 			}
 			else {
+				/*
 				if(this == GameManager.g.sequence[0] &&
 				   GameManager.g.SeqCount() > 2){
 					GameManager.g.StartCoroutine("CompleteSeq", transform);
@@ -52,6 +53,8 @@ public class Piece : MonoBehaviour {
 				else {
 					GameManager.g.RemovePieceFromSeq(this);
 				}
+				*/
+				GameManager.g.RemovePieceFromSeq(this);
 			}
 		}
 	}
