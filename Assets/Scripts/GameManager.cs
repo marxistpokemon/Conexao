@@ -127,6 +127,7 @@ public class GameManager : MonoBehaviour {
 				sequence[i].transform.position.x,
 				sequence[i].transform.position.y);
 		}
+		connectionLine.SetPosition(sequence.Count, sequence[0].transform.position);
 		polCollider.SetPath(0, points);
 	}
 
@@ -145,7 +146,7 @@ public class GameManager : MonoBehaviour {
 		Vector3 spawnPos = sequence[0].transform.position;
 		yield return new WaitForSeconds(completionDelay);
 		// clear area mesh
-		CreateMesh(new Vector2[3]);
+		//CreateMesh(new Vector2[3]);
 		// handle captured pieces
 		int capturedValue = 0;
 		int seqValue = 1;
@@ -156,6 +157,7 @@ public class GameManager : MonoBehaviour {
 			if(piece.isClicked || piece.onCaptureArea){
 				p.slot.full = false;
 				DestroyObject(p.gameObject);
+				Destroy (p);
 			}
 			piece.isClicked = false;
 		});
@@ -171,10 +173,12 @@ public class GameManager : MonoBehaviour {
 		allPieces = null;
 		yield return new WaitForSeconds(0);
 		UpdateAllPieces();
-		UpdateConnectionLine();
-		Grid.g.SpawnPiece(Random.Range (1, 3));
-		Grid.g.SpawnPiece(Random.Range (1, 3));
-		Grid.g.SpawnPiece(Random.Range (1, 3));
+		//UpdateConnectionLine();
+		int newWave = Grid.g.FindEmptySlots().Length;
+		for (int i = 0; i < newWave; i++) {
+			Grid.g.SpawnPiece(Random.Range (1, 3));
+		}
+		UpdateAllPieces();
 		moveLock = false;
 	}
 }

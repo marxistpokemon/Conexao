@@ -73,7 +73,6 @@ public class Grid : MonoBehaviour {
 				availableSlots[rand].position;
 			availableSlots[rand].full = true;
 			availableSlots[rand].piece.slot = availableSlots[rand];
-			GameManager.g.UpdateAllPieces();
 			return true;
 		}
 		else {

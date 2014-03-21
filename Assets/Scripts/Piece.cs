@@ -25,7 +25,7 @@ public class Piece : MonoBehaviour {
 
 	void OnMouseDown(){
 		Debug.Log("Click : " + gameObject.name);
-		if(!GameManager.g.moveLock){
+		if(!GameManager.g.moveLock && value > 2){
 			if(!isClicked){
 				// se primeiro da sequencia
 				if(GameManager.g.cursorValue == 0){
@@ -36,6 +36,9 @@ public class Piece : MonoBehaviour {
 				else if(GameManager.g.cursorValue == value){
 					GameManager.g.AddPieceToSeq(this);
 					isClicked = true;
+				}
+				if(GameManager.g.sequence.Count == GameManager.g.cursorValue){
+					GameManager.g.StartCoroutine("CompleteSeq", transform);
 				}
 			}
 			else {
