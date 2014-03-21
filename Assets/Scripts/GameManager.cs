@@ -6,20 +6,20 @@ public class GameManager : MonoBehaviour {
 
 	public static GameManager g;
 
-	public LineRenderer connectionLine;
-	public List<Transform> pieceSequence;
-	public List<Transform> allPieces;
-
-	public float completionDelay = 1f;
-	public bool moveLock;
-
-	public PolygonCollider2D polCollider;
-	public Triangulator triagulator;
-
-	public float meshOffsetZ = 1;
-
 	public int level;
 	public int points;
+
+	private LineRenderer connectionLine;
+	public List<Transform> pieceSequence;
+	[HideInInspector] public List<Transform> allPieces;
+
+	public float completionDelay = 1f;
+	[HideInInspector] public bool moveLock;
+
+	[HideInInspector] public PolygonCollider2D polCollider;
+	[HideInInspector] public Triangulator triagulator;
+
+	public float meshOffsetZ = 1;
 
 	public Transform piecePrefab;
 	public Transform txtLevel;
@@ -27,8 +27,11 @@ public class GameManager : MonoBehaviour {
 	private GUIText msgLevel;
 	private GUIText msgPoints;
 
-	void Start () {
+	void Awake(){
 		g = this;
+	}
+
+	void Start () {
 		pieceSequence = new List<Transform>();
 		connectionLine = GetComponent<LineRenderer>();
 		polCollider = GetComponent<PolygonCollider2D>();
@@ -97,7 +100,7 @@ public class GameManager : MonoBehaviour {
 		msgPoints.text = "Points: " + points;
 	}
 
-	void UpdateAllPieces(){
+	public void UpdateAllPieces(){
 		allPieces = new List<Transform>();
 		Object[] allGO = GameObject.FindObjectsOfType(typeof(Piece));
 		foreach (var go in allGO) {
