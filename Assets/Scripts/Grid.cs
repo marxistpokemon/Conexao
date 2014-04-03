@@ -55,7 +55,7 @@ public class Grid : MonoBehaviour {
 						newSlot.position.y,
 						0);
 					newSlot.piece.slot = newSlot;
-					newSlot.piece.value = 3;
+					newSlot.piece.value = Random.Range(3, 6);
 					done = true;
 				}
 			} while (!done);
