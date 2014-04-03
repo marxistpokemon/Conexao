@@ -29,7 +29,7 @@ public class GameManager : MonoBehaviour {
 	private GUIText msgLevel;
 	private GUIText msgPoints;
 
-	private UnityRandom urand;
+	public UnityRandom urand;
 
 	void Awake(){
 		g = this;
@@ -80,7 +80,7 @@ public class GameManager : MonoBehaviour {
 	public void RemovePieceFromSeq(Piece piece){
 		Debug.Log ("remove piece");
 		int indexToRemove = sequence.FindIndex(p => p == piece);
-		sequence.RemoveRange(indexToRemove, SeqCount()-indexToRemove);
+		if(indexToRemove >= 0) sequence.RemoveRange(indexToRemove, SeqCount()-indexToRemove);
 		UpdateClicked();
 	}
 
@@ -104,6 +104,7 @@ public class GameManager : MonoBehaviour {
 
 		msgPoints.text = "Points: " + points;
 		if(sequence.Count == 0) cursorValue = 0;
+		if(LosingConditions()) moveLock = true;
 	}
 
 	public void UpdateAllPieces(){
@@ -111,13 +112,21 @@ public class GameManager : MonoBehaviour {
 		Object[] allGO = GameObject.FindObjectsOfType(typeof(Piece));
 		foreach (var go in allGO) {
 			allPieces.Add(go as Piece);
-			(go as Piece).onCaptureArea = false;
+			//(go as Piece).onCaptureArea = false;
+		}
+	}
+
+	public void ResetAllPieces(){
+		foreach (var item in allPieces) {
+			item.isClicked = false;
+			item.onCaptureArea = false;
 		}
 	}
 
 	void UpdateClicked ()
 	{
 		allPieces.ForEach(p => {
+			p.onCaptureArea = false;
 			p.isClicked = isInSeq(p);
 		});
 	}
@@ -157,10 +166,14 @@ public class GameManager : MonoBehaviour {
 		//CreateMesh(new Vector2[3]);
 		// handle captured pieces
 		int capturedValue = cursorValue;
+		int numCaptured = 0;
 		int seqValue = 1;
+		int numSequence = sequence.Count;
+		UpdateAllPieces();
 		allPieces.ForEach(p => {
 			Piece piece = p.GetComponent<Piece>();
-			capturedValue += (piece.onCaptureArea)? 1 : 0;
+			capturedValue += (piece.onCaptureArea)? piece.value : 0;
+			numCaptured += (piece.onCaptureArea)? 1 : 0;
 			seqValue *= (piece.isClicked)? piece.value : 1;
 			if(piece.isClicked || piece.onCaptureArea){
 				p.slot.full = false;
@@ -177,32 +190,47 @@ public class GameManager : MonoBehaviour {
 			spawnSlot.piece.transform.position = spawnSlot.position;
 			spawnSlot.full = true;
 			spawnSlot.piece.slot = spawnSlot;
-			spawnSlot.piece.value = capturedValue;
+			spawnSlot.piece.value = cursor+capturedValue;
 		}
-		Debug.Log("Combined: " + cursorValue + " | Points: " + seqValue);
+		Debug.Log("Combined: " + cursor + " | Points: " + seqValue);
 		sequence.Clear();
 		allPieces = null;
 		yield return new WaitForSeconds(0);
 		int newWave = Grid.g.FindEmptySlots().Length;
+		/*
 		for (int i = 0; i < newWave; i++) {
-			Grid.g.SpawnPiece(Random.Range(cursor, cursor*2));
+			//Grid.g.SpawnPiece(numSequence);
 		}
+		*/
 		UpdateAllPieces();
-		msgLevel.text = "Lose: " + LosingConditions();
+		ResetAllPieces();
+		//msgLevel.text = "Lose: " + LosingConditions();
 		moveLock = false;
+
+
 	}
 
 	public bool LosingConditions(){
 		bool lose = true;
+		UpdateAllPieces();
 		List<int> pieceValues = new List<int>();
 		foreach (var item in allPieces) {
 			pieceValues.Add(item.value);
 		}
-		foreach (var number in pieceValues) {
-			if(pieceValues.FindAll(v => v == number).Count >= number && number > 2){
-				lose = false;
-				Debug.Log("V: " + number + " Count: " + pieceValues.FindAll(v => v == number).Count);
+		int maxValue = Mathf.Max(pieceValues.ToArray());
+		Debug.Log("Max: " + maxValue);
+		if(Mathf.Max(pieceValues.ToArray()) >= 3){
+			lose = false;
+			if(maxValue == 3 && pieceValues.FindAll(v => v == maxValue).Count <= 2){
+				lose = true;
 			}
+		}
+		if(allPieces.Count == 1){
+			lose = true;
+			msgLevel.text = "You win!";
+		}
+		else if (lose){
+			msgLevel.text = "Game over!";
 		}
 		return lose;
 	}
