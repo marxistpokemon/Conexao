@@ -22,14 +22,16 @@ public class Piece : MonoBehaviour {
 		//spriteRenderer.sprite = pieceGraphics[value];
 		txt.text = value + "";
 		txt.transform.position = Camera.main.WorldToViewportPoint(transform.position);
-		renderer.material.color = (isClicked)? Color.yellow : Color.white;
-		renderer.material.color = (onCaptureArea)? Color.red : renderer.material.color;
+		renderer.material.color = (value == 1)? Color.green : Color.white;
+		renderer.material.color = (isClicked)? Color.yellow : renderer.material.color;
 	}
 
 	void FixedUpdate(){
-		rigidbody2D.mass = value;
-		rigidbody2D.AddForce(new Vector2(Random.Range(-2f, 2f),
-		                                 Random.Range(-2f, 2f))*value);
+		if(value > 1){
+			rigidbody2D.mass = value;
+			rigidbody2D.AddForce(new Vector2(Random.Range(-2f, 2f),
+			                                 Random.Range(-2f, 2f))*value);
+		}
 	}
 
 	void OnMouseDown(){
@@ -37,31 +39,30 @@ public class Piece : MonoBehaviour {
 		if(!GameManager.g.moveLock && value > 0){
 			if(!isClicked){
 				// se primeiro da sequencia
-				if(GameManager.g.cursorValue == 0 && value > 2){
+				if(GameManager.g.cursorValue == 0){
 					GameManager.g.cursorValue = value;
 					GameManager.g.AddPieceToSeq(this);
 					isClicked = true;
 				}
-				else if(GameManager.g.cursorValue == 0 && value <= 2){
-					Split ();
-				}
-				else if(GameManager.g.cursorValue == value){
+				// se captura / comer
+				else if(GameManager.g.cursorValue  == value + 1){
 					GameManager.g.AddPieceToSeq(this);
-					isClicked = true;
+					GameManager.g.cursorValue = value;
+					if(GameManager.g.cursorValue == 1){
+						GameManager.g.StartCoroutine(GameManager.g.CombineSeq(0));
+					}
+					else {
+						isClicked = true;
+					}
 				}
-
-				if(GameManager.g.sequence.Count == GameManager.g.cursorValue && value > 2){
-					GameManager.g.StartCoroutine("CompleteSeq", transform);
+				// se reproducao
+				else if(GameManager.g.cursorValue  == value){
+					GameManager.g.AddPieceToSeq(this);
+					GameManager.g.StartCoroutine(GameManager.g.ReproSeq(value, 1));
 				}
-
 			}
 			else {
-
-				if(this == GameManager.g.sequence[0] &&
-				   GameManager.g.SeqCount() > 2){
-					GameManager.g.StartCoroutine("CompleteSeq", transform);
-				}
-				else if(this == GameManager.g.sequence[0]){
+				if(this == GameManager.g.sequence[0] && value > 1){
 					Split ();
 				}
 				else {
@@ -92,20 +93,15 @@ public class Piece : MonoBehaviour {
 		GameManager.g.RemovePieceFromSeq(this);
 		GameManager.g.allPieces.Remove(this);
 		Destroy(this.gameObject);
-		GameManager.g.points += value;
-		if(value >= 4){
+		for (int i = 0; i < value; i++) {
 			Transform newPiece1 = Instantiate(Resources.Load<Transform>("Piece")) 
 				as Transform;
-			Transform newPiece2 = Instantiate(Resources.Load<Transform>("Piece")) 
-				as Transform;
 			newPiece1.transform.position = transform.position + (Vector3)GameManager.g.urand.PointInADisk()*0.5f;
-			newPiece2.transform.position = transform.position + (Vector3)GameManager.g.urand.PointInADisk()*0.5f;
-			int v1 = Random.Range(3, value);
-			int v2 = value - v1;
+			int v1 = 1;
 			newPiece1.GetComponent<Piece>().value = v1;
-			newPiece2.GetComponent<Piece>().value = v2;
 		}
 		GameManager.g.UpdateAllPieces();
 		GameManager.g.ResetAllPieces();
+		GameManager.g.AdvanceTurn();
 	}
 }

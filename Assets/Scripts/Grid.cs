@@ -55,7 +55,8 @@ public class Grid : MonoBehaviour {
 						newSlot.position.y,
 						0);
 					newSlot.piece.slot = newSlot;
-					newSlot.piece.value = Random.Range(3, 6);
+					newSlot.piece.value = GameManager.g.allPieces.FindIndex(
+						p => p == piece)%2;
 					done = true;
 				}
 			} while (!done);
