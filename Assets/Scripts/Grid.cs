@@ -41,22 +41,24 @@ public class Grid : MonoBehaviour {
 				list.Add(slots[col, row]);
 			}
 		}
-		foreach(var piece in GameManager.g.allPieces){
+
+		for (int i = 0; i < GameManager.g.allPieces.Count; i++) {
+
 			bool done = false;
 			Slot newSlot;
 			do {
 				newSlot = slots[Random.Range(0, slots.GetLength(0)),
 				                Random.Range(0, slots.GetLength(1))];
 				if(!newSlot.full){
-					newSlot.piece = piece.GetComponent<Piece>();
+					newSlot.piece = GameManager.g.allPieces[i]
+						.GetComponent<Piece>();
 					newSlot.full = true;
 					newSlot.piece.transform.position = new Vector3(
 						newSlot.position.x,
 						newSlot.position.y,
 						0);
 					newSlot.piece.slot = newSlot;
-					newSlot.piece.value = GameManager.g.allPieces.FindIndex(
-						p => p == piece)%2;
+					newSlot.piece.value =  2 - i%2;
 					done = true;
 				}
 			} while (!done);
