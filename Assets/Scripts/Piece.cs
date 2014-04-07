@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System.Collections;
 
 
@@ -39,34 +39,34 @@ public class Piece : MonoBehaviour {
 		if(!GameManager.g.moveLock && value > 0){
 			if(!isClicked){
 				// se primeiro da sequencia
-				if(GameManager.g.cursorValue == 0){
-					GameManager.g.cursorValue = value;
-					GameManager.g.AddPieceToSeq(this);
+				if(PieceManager.g.cursorValue == 0){
+					PieceManager.g.cursorValue = value;
+					PieceManager.g.AddPieceToSequence(this);
 					isClicked = true;
 				}
 				// se captura / comer
-				else if(GameManager.g.cursorValue  == value + 1){
-					GameManager.g.AddPieceToSeq(this);
-					GameManager.g.cursorValue = value;
-					if(GameManager.g.cursorValue == 1){
-						GameManager.g.StartCoroutine(GameManager.g.CombineSeq(0));
+				else if(PieceManager.g.cursorValue  == value + 1){
+					PieceManager.g.AddPieceToSequence(this);
+					PieceManager.g.cursorValue = value;
+					if(PieceManager.g.cursorValue == 1){
+						PieceManager.g.StartCoroutine(PieceManager.g.CombineSequence(0));
 					}
 					else {
 						isClicked = true;
 					}
 				}
 				// se reproducao
-				else if(GameManager.g.cursorValue  == value){
-					GameManager.g.AddPieceToSeq(this);
-					GameManager.g.StartCoroutine(GameManager.g.ReproSeq(value, 1));
+				else if(PieceManager.g.cursorValue  == value){
+					PieceManager.g.AddPieceToSequence(this);
+					PieceManager.g.StartCoroutine(PieceManager.g.ReproSequence(value, 1));
 				}
 			}
 			else {
-				if(this == GameManager.g.sequence[0] && value > 1){
+				if(this == PieceManager.g.sequence[0] && value > 1){
 					Split ();
 				}
 				else {
-					GameManager.g.RemovePieceFromSeq(this);
+					PieceManager.g.RemovePieceFromSequence(this);
 				}
 
 			}
@@ -90,8 +90,8 @@ public class Piece : MonoBehaviour {
 	}
 
 	void Split(){
-		GameManager.g.RemovePieceFromSeq(this);
-		GameManager.g.allPieces.Remove(this);
+		PieceManager.g.RemovePieceFromSequence(this);
+		PieceManager.g.all.Remove(this);
 		Destroy(this.gameObject);
 		for (int i = 0; i < value; i++) {
 			Transform newPiece1 = Instantiate(Resources.Load<Transform>("Piece")) 
@@ -100,8 +100,6 @@ public class Piece : MonoBehaviour {
 			int v1 = 1;
 			newPiece1.GetComponent<Piece>().value = v1;
 		}
-		GameManager.g.UpdateAllPieces();
-		GameManager.g.ResetAllPieces();
 		GameManager.g.AdvanceTurn();
 	}
 }

@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 
@@ -29,7 +29,7 @@ public class Grid : MonoBehaviour {
 			Transform newPiece = Instantiate(Resources.Load<Transform>("Piece")) 
 				as Transform;
 		}
-		GameManager.g.UpdateAllPieces();
+		// retrieve from scene
 		slots = new Slot[width,height]; // hardcoded numbers
 		for (int col = 0; col < slots.GetLength(0); col++) {
 			for (int row = 0; row < slots.GetLength(1); row++) {
@@ -42,7 +42,7 @@ public class Grid : MonoBehaviour {
 			}
 		}
 
-		for (int i = 0; i < GameManager.g.allPieces.Count; i++) {
+		for (int i = 0; i < GameManager.g.pieces.Count; i++) {
 
 			bool done = false;
 			Slot newSlot;
@@ -50,7 +50,7 @@ public class Grid : MonoBehaviour {
 				newSlot = slots[Random.Range(0, slots.GetLength(0)),
 				                Random.Range(0, slots.GetLength(1))];
 				if(!newSlot.full){
-					newSlot.piece = GameManager.g.allPieces[i]
+					newSlot.piece = GameManager.g.pieces[i]
 						.GetComponent<Piece>();
 					newSlot.full = true;
 					newSlot.piece.transform.position = new Vector3(
