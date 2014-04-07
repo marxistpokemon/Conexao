@@ -5,13 +5,13 @@ using System.Collections.Generic;
 public class PieceManager : MonoBehaviour {
 
 	public static PieceManager g;
-
+	public int startingNumber;
 	public List<Piece> sequence;
 	public List<Piece> all;
 	public Transform piecePrefab;
 	public int cursorValue;
 
-	private UnityRandom urand;
+
 	private LineRenderer connectionLine;
 
 	void Awake() 
@@ -23,8 +23,17 @@ public class PieceManager : MonoBehaviour {
 	{
 		sequence = new List<Piece>();
 		all = new List<Piece>();
-		urand = new UnityRandom();
 		connectionLine = GetComponent<LineRenderer>();
+		PopulateScene();
+	}
+
+	public void PopulateScene() {
+		for (int i = 0; i < startingNumber; i++) {
+			Transform newPiece = Instantiate(piecePrefab) 
+				as Transform;
+			newPiece.position = GameManager.g.urand.PointInACube() * 2;
+			newPiece.GetComponent<Piece>().value = 2 - i%2;
+		}
 	}
 
 	public void ReloadPiecesFromScene() 
@@ -53,7 +62,6 @@ public class PieceManager : MonoBehaviour {
 		int index = sequence.FindIndex(p => p == piece);
 		if (index < 0) {
 			sequence.Add(piece);
-			ResetAllClicked();
 			return true;
 		}
 		return false;

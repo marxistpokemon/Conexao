@@ -48,11 +48,9 @@ public class Piece : MonoBehaviour {
 				else if(PieceManager.g.cursorValue  == value + 1){
 					PieceManager.g.AddPieceToSequence(this);
 					PieceManager.g.cursorValue = value;
+					isClicked = true;
 					if(PieceManager.g.cursorValue == 1){
 						PieceManager.g.StartCoroutine(PieceManager.g.CombineSequence(0));
-					}
-					else {
-						isClicked = true;
 					}
 				}
 				// se reproducao

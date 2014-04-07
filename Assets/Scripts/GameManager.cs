@@ -15,19 +15,16 @@ public class GameManager : MonoBehaviour {
 #region Vars
 	public static GameManager g;
 
-	public int level;
-	public int points;
-	public int turns;
+	public bool moveLock;
+
+	public int level; // max animal
+	public int points;// total de vida
+	public int turns; // cada acao realizada
+
 	public Seasons season;
+	public int winterFrequency;
 
-	public int cursorValue = 0;
-	public List<Piece> sequence;
-	public List<Piece> pieces;
-
-	public float completionDelay = 1f;
-	[HideInInspector] public bool moveLock;
-
-	public Transform piecePrefab;
+	// Gui
 	public Transform txtLevel;
 	public Transform txtPoints;
 	private GUIText msgLevel;
@@ -35,23 +32,21 @@ public class GameManager : MonoBehaviour {
 
 	public UnityRandom urand;
 
-	public int winterFrequency;
-
 #endregion
 
 	void Awake(){
 		g = this;
+		urand = new UnityRandom();
 	}
 
 	void Start () {
 		msgPoints = txtPoints.GetComponent<GUIText>();
 		msgLevel = txtLevel.GetComponent<GUIText>();
-		turns = 0;
+		turns = 1;
 	}
 
-#region Updates
 	void Update(){
-		// FIXME cancel sequences
+		// FIXME cancelar sequences tem que ir pro PM?
 		if(PieceManager.g.sequence.Count > 0 && Input.GetMouseButtonUp(1)){
 			PieceManager.g.RemovePieceFromSequence(PieceManager.g.sequence[0]);
 			// reset
@@ -59,12 +54,8 @@ public class GameManager : MonoBehaviour {
 		// GUI update
 		msgPoints.text = "Points: " + points;
 
-		//if(LosingConditions()) moveLock = true;
+		if(CheckGameOver() && turns > 1) moveLock = true;
 	}
-
-#endregion
-
-#region Game flow
 
 	public void AdvanceTurn(){
 		turns++;
@@ -86,29 +77,22 @@ public class GameManager : MonoBehaviour {
 		PieceManager.g.ReloadPiecesFromScene();
 	}
 
-	public bool LosingConditions(){
-		bool lose = true;
+	public bool CheckGameOver(){
+		bool lose = false;
+		points = 0;
 		List<int> pieceValues = new List<int>();
-		foreach (var item in pieces) {
+		foreach (var item in PieceManager.g.all) {
 			pieceValues.Add(item.value);
+			points += item.value;
 		}
-		int maxValue = Mathf.Max(pieceValues.ToArray());
-		Debug.Log("Max: " + maxValue);
-		if(Mathf.Max(pieceValues.ToArray()) >= 3){
-			lose = false;
-			if(maxValue == 3 && pieceValues.FindAll(v => v == maxValue).Count <= 2){
-				lose = true;
-			}
-		}
-		if(pieces.Count == 1){
+		level = Mathf.Max(pieceValues.ToArray());
+		if(pieceValues.FindAll(v => v == 2).Count < 2){
 			lose = true;
-			msgLevel.text = "You win!";
 		}
-		else if (lose){
+		if(PieceManager.g.all.Count == 1 || lose){
 			msgLevel.text = "Game over!";
 		}
 		return lose;
 	}
 
-#endregion
 }

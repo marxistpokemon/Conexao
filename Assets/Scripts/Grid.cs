@@ -42,7 +42,7 @@ public class Grid : MonoBehaviour {
 			}
 		}
 
-		for (int i = 0; i < GameManager.g.pieces.Count; i++) {
+		for (int i = 0; i < PieceManager.g.all.Count; i++) {
 
 			bool done = false;
 			Slot newSlot;
@@ -50,8 +50,7 @@ public class Grid : MonoBehaviour {
 				newSlot = slots[Random.Range(0, slots.GetLength(0)),
 				                Random.Range(0, slots.GetLength(1))];
 				if(!newSlot.full){
-					newSlot.piece = GameManager.g.pieces[i]
-						.GetComponent<Piece>();
+					newSlot.piece = PieceManager.g.all[i];
 					newSlot.full = true;
 					newSlot.piece.transform.position = new Vector3(
 						newSlot.position.x,
