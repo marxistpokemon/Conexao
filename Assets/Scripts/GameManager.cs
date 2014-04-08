@@ -12,7 +12,6 @@ public enum Seasons {
 
 public class GameManager : MonoBehaviour {
 
-#region Vars
 	public static GameManager g;
 
 	public bool moveLock;
@@ -31,8 +30,6 @@ public class GameManager : MonoBehaviour {
 	private GUIText msgPoints;
 
 	public UnityRandom urand;
-
-#endregion
 
 	void Awake(){
 		g = this;
@@ -57,12 +54,22 @@ public class GameManager : MonoBehaviour {
 		if(CheckGameOver() && turns > 1) moveLock = true;
 	}
 
+	public void ChangeSeasons(Seasons newSeason){
+		season = newSeason;
+	}
+
+	public void ChangeSeasons(int diff){
+		int nextSeason = (int)season;
+		season = (Seasons)Mathf.Abs((nextSeason + diff)%4);
+	}
+
 	public void AdvanceTurn(){
 		turns++;
-		msgLevel.text = "Turn count: " + turns;
-		if(turns % winterFrequency == 0){
+		int seasonChange = (turns % winterFrequency == 0)? 1 : 0;
+		ChangeSeasons(seasonChange);
+		msgLevel.text = "Moves: " + turns + " | Season: " + season.ToString();
+		if(season == Seasons.WINTER){
 			StartWinter();
-			msgLevel.text += " WINTER!!!!";
 		}
 	}
 
